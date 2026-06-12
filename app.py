@@ -17,7 +17,8 @@ from langchain_core.prompts import ChatPromptTemplate
 st.set_page_config(
     page_title="Chat with PDF",
     page_icon="📄",
-    layout="centered"
+    layout="centered",
+    initial_sidebar_state="expanded"
 )
 
 # ─────────────────────────────────────────────
@@ -29,136 +30,282 @@ MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 def inject_custom_css():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+    /* 1. GLOBAL STYLES */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    /* Global Font */
-    html, body, [class*="css"] {
-        font-family: 'Outfit', sans-serif !important;
+    :root {
+        --bg-color: #0a0a0f;
+        --accent-1: #8b5cf6;
+        --accent-2: #3b82f6;
+        --accent-3: #ec4899;
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-primary: #ffffff;
+        --text-secondary: #a1a1aa;
     }
 
-    /* Main background with dynamic gradient mesh effect */
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Hide Streamlit Branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(139, 92, 246, 0.3);
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(139, 92, 246, 0.6);
+    }
+
+    /* Animated Gradient Background */
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
     .stApp {
-        background: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
-                    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%),
-                    linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        background: linear-gradient(-45deg, #0a0a0f, #150f24, #0a1128, #0a0a0f);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
         background-attachment: fixed;
-        color: white;
     }
     
-    /* Sidebar glassmorphism */
+    /* 2. HEADER */
+    .premium-title {
+        text-align: center;
+        background: linear-gradient(90deg, var(--accent-2), var(--accent-1), var(--accent-3));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        letter-spacing: -1px;
+    }
+    .premium-subtitle {
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        font-weight: 400;
+        margin-bottom: 2rem;
+    }
+    
+    /* 3. SIDEBAR */
     [data-testid="stSidebar"] {
-        background: rgba(15, 23, 42, 0.5) !important;
+        background: var(--glass-bg) !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+        border-right: 1px solid var(--glass-border) !important;
     }
     
     /* File uploader styling */
     [data-testid="stFileUploader"] {
-        background: rgba(255, 255, 255, 0.02) !important;
-        border: 1px dashed rgba(255, 255, 255, 0.2) !important;
-        border-radius: 15px !important;
-        padding: 10px !important;
+        background: transparent !important;
+        border: 1px dashed var(--glass-border) !important;
+        border-radius: 16px !important;
+        padding: 15px !important;
         transition: all 0.3s ease !important;
     }
     [data-testid="stFileUploader"]:hover {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(139, 92, 246, 0.5) !important;
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-color: var(--accent-1) !important;
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.2) !important;
     }
 
-    /* Chat message glassmorphism */
+    /* 4. MAIN CHAT AREA */
     [data-testid="stChatMessage"] {
-        background: rgba(255, 255, 255, 0.02) !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        border-radius: 20px !important;
-        padding: 20px !important;
-        margin-bottom: 20px !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15) !important;
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 16px !important;
+        padding: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s !important;
+        animation: fadeIn 0.5s ease forwards;
     }
     
-    [data-testid="stChatMessage"]:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.25) !important;
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Chat message user vs assistant */
+    /* User Message */
     [data-testid="stChatMessage"][data-baseweb="chat-message-user"] {
-        background: linear-gradient(145deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%) !important;
-        border: 1px solid rgba(59, 130, 246, 0.2) !important;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15)) !important;
+        border: 1px solid rgba(139, 92, 246, 0.3) !important;
         border-bottom-right-radius: 4px !important;
     }
     
+    /* Assistant Message */
     [data-testid="stChatMessage"][data-baseweb="chat-message-assistant"] {
-        background: linear-gradient(145deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%) !important;
-        border: 1px solid rgba(139, 92, 246, 0.2) !important;
+        background: var(--glass-bg) !important;
+        border: 1px solid var(--glass-border) !important;
         border-bottom-left-radius: 4px !important;
     }
     
-    /* Chat input box glassmorphism */
+    /* 5. SOURCE CITATIONS */
+    .source-pill {
+        display: inline-block;
+        background: rgba(139, 92, 246, 0.15);
+        border: 1px solid rgba(139, 92, 246, 0.4);
+        border-radius: 20px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        color: #e2e8f0;
+        margin-top: 12px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        cursor: default;
+    }
+    .source-pill:hover {
+        background: rgba(139, 92, 246, 0.3);
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        transform: translateY(-1px);
+    }
+    
+    /* 6. INPUT BOX */
     [data-testid="stChatInput"] {
-        background: rgba(15, 23, 42, 0.7) !important;
+        background: rgba(10, 10, 15, 0.8) !important;
         backdrop-filter: blur(25px) !important;
         -webkit-backdrop-filter: blur(25px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border: 1px solid var(--glass-border) !important;
         border-radius: 24px !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4) !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.4) !important;
         transition: all 0.3s ease !important;
     }
     [data-testid="stChatInput"]:focus-within {
-        border-color: rgba(139, 92, 246, 0.6) !important;
-        box-shadow: 0 8px 40px 0 rgba(139, 92, 246, 0.2) !important;
+        border-color: var(--accent-1) !important;
+        box-shadow: 0 0 25px rgba(139, 92, 246, 0.3), 0 -10px 40px rgba(0, 0, 0, 0.5) !important;
     }
     
+    /* 8. BUTTONS */
+    .stButton > button {
+        background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%) !important;
+        border: none !important;
+        color: white !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        padding: 0.6rem 1.2rem !important;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6) !important;
+    }
+    .stButton > button:active {
+        transform: translateY(0px) !important;
+    }
+    
+    /* 9. SUCCESS/ERROR MESSAGES */
+    .stAlert {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
+        border-radius: 16px !important;
+        color: var(--text-primary) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+        animation: slideInTop 0.4s ease forwards;
+        border: 1px solid var(--glass-border) !important;
+    }
+    @keyframes slideInTop {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* 10. EMPTY STATE */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 45vh;
+        text-align: center;
+        animation: fadeIn 1s ease;
+    }
+    .empty-icon {
+        font-size: 5rem;
+        margin-bottom: 1.5rem;
+        animation: bounce 2s infinite ease-in-out;
+        text-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+    }
+    .empty-title {
+        background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    .empty-text {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        max-width: 450px;
+        line-height: 1.5;
+    }
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+
+    /* 7. LOADING STATE */
+    .custom-spinner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        width: fit-content;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        margin-bottom: 15px;
+    }
+    .dot {
+        width: 8px;
+        height: 8px;
+        background: var(--accent-1);
+        border-radius: 50%;
+        animation: pulse 1.5s infinite ease-in-out;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse {
+        0%, 100% { transform: scale(0.8); opacity: 0.3; }
+        50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 10px var(--accent-1); }
+    }
+
     /* Expanders */
     .streamlit-expanderHeader {
-        background: rgba(255, 255, 255, 0.03) !important;
+        background: var(--glass-bg) !important;
         border-radius: 12px !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid var(--glass-border) !important;
         transition: background 0.2s !important;
     }
     .streamlit-expanderHeader:hover {
         background: rgba(255, 255, 255, 0.08) !important;
     }
     
-    /* Typography & Titles */
-    h1, h2, h3 {
-        background: -webkit-linear-gradient(45deg, #93c5fd, #c4b5fd);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 800 !important;
-        letter-spacing: -0.5px !important;
-    }
-    
-    /* Buttons */
-    .stButton > button {
-        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
-        border: none !important;
-        color: white !important;
-        border-radius: 12px !important;
-        font-weight: 600 !important;
-        padding: 0.5rem 1rem !important;
-        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    }
-    .stButton > button:hover {
-        transform: translateY(-2px) scale(1.02) !important;
-        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5) !important;
-    }
-    .stButton > button:active {
-        transform: translateY(0px) scale(0.98) !important;
-    }
-    
-    /* Info/Alert boxes */
-    .stAlert {
-        background: rgba(255, 255, 255, 0.03) !important;
-        backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 16px !important;
-        color: #e2e8f0 !important;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    /* Media Queries */
+    @media (max-width: 768px) {
+        .premium-title { font-size: 2.2rem; }
+        .empty-state { height: 40vh; }
+        [data-testid="stChatMessage"] { padding: 1rem !important; }
     }
     </style>
     """, unsafe_allow_html=True)
@@ -364,8 +511,11 @@ def main():
     # 1. Load API Key gracefully
     api_key = load_api_key()
     
-    # 2. Main Area UI
-    st.title("📄 Chat with Your PDF")
+    # 2. Main Area UI Header
+    st.markdown("""
+        <h1 class="premium-title">📄 Chat with Your PDF</h1>
+        <p class="premium-subtitle">Ask anything. Get answers with verified sources.</p>
+    """, unsafe_allow_html=True)
     
     # 3. Sidebar UI
     with st.sidebar:
@@ -373,7 +523,7 @@ def main():
         uploaded_file = st.file_uploader("Upload a PDF document", type=["pdf"])
         
         if uploaded_file:
-            # Show file info
+            # Show file info in a card
             file_size_mb = uploaded_file.size / (1024 * 1024)
             st.info(f"**{uploaded_file.name}**\n\nSize: {file_size_mb:.1f} MB")
             
@@ -386,11 +536,17 @@ def main():
             st.session_state.debug_mode = st.checkbox("🔍 Show retrieved chunks", value=st.session_state.get("debug_mode", False))
                 
         st.markdown("---")
-        st.markdown("<small>🔒 Your PDF is processed in-memory and never stored.</small>", unsafe_allow_html=True)
+        st.markdown("<small style='color: #a1a1aa;'>🔒 Your PDF is processed in-memory and never stored.</small>", unsafe_allow_html=True)
 
-    # 4. Process PDF & Chat Logic
+    # 4. Process PDF & Chat Logic (Empty State)
     if not uploaded_file:
-        st.write("👈 Upload a PDF from the sidebar to get started.")
+        st.markdown("""
+        <div class="empty-state">
+            <div class="empty-icon">👈📄</div>
+            <div class="empty-title">Welcome to your AI Assistant</div>
+            <p class="empty-text">Upload a PDF from the sidebar to start asking questions, extracting insights, and summarizing content.</p>
+        </div>
+        """, unsafe_allow_html=True)
         return
 
     # Validate and process the PDF
@@ -411,7 +567,8 @@ def main():
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
             if "sources" in msg and msg["sources"]:
-                st.caption(f"📑 Sources: Page(s) {', '.join(map(str, msg['sources']))}")
+                sources_str = ", ".join(map(str, msg["sources"]))
+                st.markdown(f'<div class="source-pill">📑 Sources: Page(s) {sources_str}</div>', unsafe_allow_html=True)
             # Show debug chunks if saved and debug mode is on
             if st.session_state.get("debug_mode") and "debug_chunks" in msg:
                 with st.expander("🔍 Retrieved Chunks (Debug)"):
@@ -430,12 +587,27 @@ def main():
         
         # Generate and show response
         with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                answer, sources, retrieved_docs = answer_question(vector_store, prompt, api_key)
-                
+            # Custom Thinking Spinner
+            loading_html = """
+            <div class="custom-spinner">
+                <span style="color:var(--text-secondary); font-weight:500; font-size:0.9rem;">Thinking</span>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            """
+            placeholder = st.empty()
+            placeholder.markdown(loading_html, unsafe_allow_html=True)
+            
+            # Fetch Answer
+            answer, sources, retrieved_docs = answer_question(vector_store, prompt, api_key)
+            
+            # Clear Spinner and Show Answer
+            placeholder.empty()
             st.markdown(answer)
+            
             if sources:
-                st.caption(f"📑 Sources: Page(s) {', '.join(map(str, sources))}")
+                sources_str = ", ".join(map(str, sources))
+                st.markdown(f'<div class="source-pill">📑 Sources: Page(s) {sources_str}</div>', unsafe_allow_html=True)
+                
             # Show debug expander for current response
             if st.session_state.get("debug_mode") and retrieved_docs:
                 with st.expander("🔍 Retrieved Chunks (Debug)"):
