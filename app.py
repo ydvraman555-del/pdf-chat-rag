@@ -26,6 +26,99 @@ st.set_page_config(
 MAX_FILE_SIZE_MB = 20
 MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 
+def inject_custom_css():
+    st.markdown("""
+    <style>
+    /* Main background gradient */
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        color: white;
+    }
+    
+    /* Sidebar glassmorphism */
+    [data-testid="stSidebar"] {
+        background: rgba(15, 23, 42, 0.4) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    /* Chat message glassmorphism */
+    [data-testid="stChatMessage"] {
+        background: rgba(255, 255, 255, 0.03) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        border-radius: 15px !important;
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* Chat message user vs assistant */
+    [data-testid="stChatMessage"][data-baseweb="chat-message-user"] {
+        background: rgba(59, 130, 246, 0.1) !important;
+        border: 1px solid rgba(59, 130, 246, 0.2) !important;
+    }
+    
+    [data-testid="stChatMessage"][data-baseweb="chat-message-assistant"] {
+        background: rgba(139, 92, 246, 0.1) !important;
+        border: 1px solid rgba(139, 92, 246, 0.2) !important;
+    }
+    
+    /* Chat input box glassmorphism */
+    [data-testid="stChatInput"] {
+        background: rgba(15, 23, 42, 0.6) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    /* Expanders */
+    .streamlit-expanderHeader {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 10px !important;
+    }
+    
+    /* Typography & Titles */
+    h1, h2, h3 {
+        background: -webkit-linear-gradient(45deg, #60a5fa, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800 !important;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%) !important;
+        border: none !important;
+        color: white !important;
+        border-radius: 10px !important;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
+        transition: transform 0.2s, box-shadow 0.2s !important;
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5) !important;
+    }
+    
+    /* Info boxes */
+    .stAlert {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        color: #e2e8f0 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+# Inject CSS
+inject_custom_css()
+
+
 
 def load_api_key() -> str:
     """
