@@ -30,17 +30,7 @@ st.set_page_config(
 MAX_FILE_SIZE_MB = 20
 MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 
-# Base64 encoded sounds (tiny notification sounds)
-# Pop sound for send:
-SOUND_SEND = "UklGRhwBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTgBAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAe318foB/gYKFiI2TlZ6hr7a9x83V3eLq7/P4+/z+f3x7dG1nYWJdU09IQkE9OjY0LygkJB4YExEODAsJBwcFBAMCAgIB/f79/Pv7+vr5+Pj39/b29fX08/Py8vHx8PDw8PDw8PDw8PDw8PDw8PDw7+/u7u7u7u7t7e3t7e3t7e3t7e3t7e3s7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6w=="
-# Chime sound for receive:
-SOUND_RECEIVE = "UklGRuQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YcQBAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIB4dnRxcG5tbmxtb29xdHh8f4KFh4qNj5KVmJufpKurr7S1ubi8vb6/wMHExcXGx8jHxsXExcTBwL+9vLu6ubi3tbSysbCvrq2sq6qpqKelpaSkpKSkpKSkpKSko6Ojo6OioqKioqKioqKioqKioqKhoaGhoaGhoaGhoqKioqKioqKjo6OjpKSkpKSkpKWlpaWlpaWlpaWmpycoKSoqKywtLi8wMTEyMjMzNDQ1NTY3ODk5Ojo7Ozw9PT4+Pj8/QEBAQEFBQUJCQkNCQ0NEREREQ0NDQ0JCQkJAP0A/Pj4+PT08PDw7Ozo6Ojk5OTg4NzY1NDMyMTAvLiwsKyopKCcmJSMiIR8eHRwaGBYVFBMRDw4MCwoIBwUEAwIB"
 
-def play_sound(b64_sound):
-    """Injects an invisible audio tag to play a sound."""
-    if st.session_state.get("sound_enabled", True):
-        audio_html = f'<audio autoplay="true" style="display:none;"><source src="data:audio/wav;base64,{b64_sound}" type="audio/wav"></audio>'
-        components.html(audio_html, height=0)
 
 def trigger_confetti():
     """Injects JS to trigger canvas-confetti."""
@@ -451,8 +441,6 @@ def answer_question(vector_store, question: str, api_key: str) -> tuple[str, lis
 
 def main():
     # 1. Initialize State
-    if "sound_enabled" not in st.session_state:
-        st.session_state.sound_enabled = True
     if "messages" not in st.session_state:
         st.session_state.messages = []
     if "pdf_processed" not in st.session_state:
@@ -470,13 +458,6 @@ def main():
     
     # 4. Sidebar UI
     with st.sidebar:
-        st.header("⚙️ Preferences")
-        sound_choice = st.toggle("🔊 Sounds", value=st.session_state.sound_enabled)
-        if sound_choice != st.session_state.sound_enabled:
-            st.session_state.sound_enabled = sound_choice
-            st.rerun()
-
-        st.markdown("---")
         st.header("📄 Document Setup")
         uploaded_file = st.file_uploader("Upload a PDF document", type=["pdf"], label_visibility="collapsed")
         
@@ -531,7 +512,6 @@ def main():
 
     # 8. Handle User Input
     if prompt := st.chat_input("Ask a question about your PDF..."):
-        play_sound(SOUND_SEND)
         
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -550,7 +530,6 @@ def main():
             answer, sources, retrieved_docs = answer_question(vector_store, prompt, api_key)
             
             placeholder.empty()
-            play_sound(SOUND_RECEIVE)
             
             # Streaming Typewriter effect
             st.write_stream(stream_response(answer))
