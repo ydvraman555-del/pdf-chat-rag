@@ -1,0 +1,23 @@
+# Virtual environment
+venv/
+
+# Environment variables (NEVER commit real keys)
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Sample data
+sample.pdf
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
