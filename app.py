@@ -65,28 +65,18 @@ def stream_response(text):
         time.sleep(0.01) # 10ms delay per character
 
 
-def inject_custom_css(theme="dark"):
+def inject_custom_css():
     """Injects dynamic CSS based on theme."""
     
     # Theme variables
-    if theme == "light":
-        bg_colors = "linear-gradient(-45deg, #f8fafc, #eff6ff, #f3e8ff, #f8fafc)"
-        glass_bg = "rgba(255, 255, 255, 0.6)"
-        glass_border = "rgba(0, 0, 0, 0.1)"
-        text_primary = "#0f172a"
-        text_secondary = "#64748b"
-        particle_color = "rgba(59, 130, 246, 0.4)"
-        assistant_bg = "rgba(255, 255, 255, 0.7)"
-        input_bg = "rgba(255, 255, 255, 0.8)"
-    else:
-        bg_colors = "linear-gradient(-45deg, #0a0a0f, #150f24, #0a1128, #0a0a0f)"
-        glass_bg = "rgba(255, 255, 255, 0.05)"
-        glass_border = "rgba(255, 255, 255, 0.1)"
-        text_primary = "#ffffff"
-        text_secondary = "#a1a1aa"
-        particle_color = "rgba(139, 92, 246, 0.2)"
-        assistant_bg = "rgba(255, 255, 255, 0.03)"
-        input_bg = "rgba(10, 10, 15, 0.8)"
+    bg_colors = "linear-gradient(-45deg, #0a0a0f, #150f24, #0a1128, #0a0a0f)"
+    glass_bg = "rgba(255, 255, 255, 0.05)"
+    glass_border = "rgba(255, 255, 255, 0.1)"
+    text_primary = "#ffffff"
+    text_secondary = "#a1a1aa"
+    particle_color = "rgba(139, 92, 246, 0.2)"
+    assistant_bg = "rgba(255, 255, 255, 0.03)"
+    input_bg = "rgba(10, 10, 15, 0.8)"
 
     # Generate CSS box-shadow particles
     import random
@@ -461,8 +451,6 @@ def answer_question(vector_store, question: str, api_key: str) -> tuple[str, lis
 
 def main():
     # 1. Initialize State
-    if "theme" not in st.session_state:
-        st.session_state.theme = "dark"
     if "sound_enabled" not in st.session_state:
         st.session_state.sound_enabled = True
     if "messages" not in st.session_state:
@@ -470,8 +458,8 @@ def main():
     if "pdf_processed" not in st.session_state:
         st.session_state.pdf_processed = False
 
-    # 2. Inject CSS with Theme
-    inject_custom_css(st.session_state.theme)
+    # 2. Inject CSS
+    inject_custom_css()
     api_key = load_api_key()
     
     # 3. Header
@@ -483,17 +471,10 @@ def main():
     # 4. Sidebar UI
     with st.sidebar:
         st.header("⚙️ Preferences")
-        col1, col2 = st.columns(2)
-        with col1:
-            theme_choice = st.radio("Theme", ["Dark", "Light"], index=0 if st.session_state.theme == "dark" else 1, horizontal=True)
-            if theme_choice.lower() != st.session_state.theme:
-                st.session_state.theme = theme_choice.lower()
-                st.rerun()
-        with col2:
-            sound_choice = st.toggle("🔊 Sounds", value=st.session_state.sound_enabled)
-            if sound_choice != st.session_state.sound_enabled:
-                st.session_state.sound_enabled = sound_choice
-                st.rerun()
+        sound_choice = st.toggle("🔊 Sounds", value=st.session_state.sound_enabled)
+        if sound_choice != st.session_state.sound_enabled:
+            st.session_state.sound_enabled = sound_choice
+            st.rerun()
 
         st.markdown("---")
         st.header("📄 Document Setup")
