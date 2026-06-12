@@ -117,23 +117,12 @@
 ### Local Setup
 
 ```bash
-# Clone
 git clone https://github.com/ydvraman555-del/pdf-chat-rag.git
 cd pdf-chat-rag
-
-# Virtual environment
 python -m venv venv
-.\venv\Scripts\Activate.ps1        # Windows
-# source venv/bin/activate          # macOS/Linux
-
-# Install dependencies
+venv\Scripts\activate  # Windows
 pip install -r requirements.txt
-
-# Configure API key
-cp .env.example .env
-# Edit .env → add your GOOGLE_API_KEY
-
-# Run
+cp .env.example .env   # Add your Gemini key
 streamlit run app.py
 ```
 
@@ -157,18 +146,14 @@ The app opens at `http://localhost:8501`.
 
 ---
 
-## 🔒 Security
+## 🔒 Security Features
 
-This project follows security best practices for API key management:
-
-- ✅ API key loaded exclusively via environment variables (`os.getenv`)
-- ✅ `.env` excluded in `.gitignore` — never committed to Git
-- ✅ Key validated at startup — graceful error if missing
-- ✅ Key scrubbed from all error messages before display
-- ✅ Uploaded PDFs validated via magic bytes (not just file extension)
-- ✅ Temp files deleted immediately after processing
-- ✅ All API calls happen server-side — key never sent to the browser
-- ✅ No `print()` or `st.write()` ever exposes the key
+- API keys via environment variables — never hardcoded
+- .env gitignored, .env.example committed as template
+- Uploaded PDFs processed in-memory, temp files auto-deleted
+- File size and type validation on upload
+- No persistent user data storage
+- Strict prompt engineering prevents hallucinations
 
 ---
 
