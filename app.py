@@ -29,88 +29,136 @@ MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 def inject_custom_css():
     st.markdown("""
     <style>
-    /* Main background gradient */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+    /* Global Font */
+    html, body, [class*="css"] {
+        font-family: 'Outfit', sans-serif !important;
+    }
+
+    /* Main background with dynamic gradient mesh effect */
     .stApp {
-        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        background: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+                    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%),
+                    linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        background-attachment: fixed;
         color: white;
     }
     
     /* Sidebar glassmorphism */
     [data-testid="stSidebar"] {
-        background: rgba(15, 23, 42, 0.4) !important;
-        backdrop-filter: blur(16px) !important;
-        -webkit-backdrop-filter: blur(16px) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: rgba(15, 23, 42, 0.5) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
     }
     
+    /* File uploader styling */
+    [data-testid="stFileUploader"] {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+        border-radius: 15px !important;
+        padding: 10px !important;
+        transition: all 0.3s ease !important;
+    }
+    [data-testid="stFileUploader"]:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(139, 92, 246, 0.5) !important;
+    }
+
     /* Chat message glassmorphism */
     [data-testid="stChatMessage"] {
-        background: rgba(255, 255, 255, 0.03) !important;
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
+        background: rgba(255, 255, 255, 0.02) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
         border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        border-radius: 15px !important;
-        padding: 15px !important;
-        margin-bottom: 15px !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2) !important;
+        border-radius: 20px !important;
+        padding: 20px !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15) !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    
+    [data-testid="stChatMessage"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.25) !important;
     }
     
     /* Chat message user vs assistant */
     [data-testid="stChatMessage"][data-baseweb="chat-message-user"] {
-        background: rgba(59, 130, 246, 0.1) !important;
+        background: linear-gradient(145deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%) !important;
         border: 1px solid rgba(59, 130, 246, 0.2) !important;
+        border-bottom-right-radius: 4px !important;
     }
     
     [data-testid="stChatMessage"][data-baseweb="chat-message-assistant"] {
-        background: rgba(139, 92, 246, 0.1) !important;
+        background: linear-gradient(145deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%) !important;
         border: 1px solid rgba(139, 92, 246, 0.2) !important;
+        border-bottom-left-radius: 4px !important;
     }
     
     /* Chat input box glassmorphism */
     [data-testid="stChatInput"] {
-        background: rgba(15, 23, 42, 0.6) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 20px !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+        background: rgba(15, 23, 42, 0.7) !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    [data-testid="stChatInput"]:focus-within {
+        border-color: rgba(139, 92, 246, 0.6) !important;
+        box-shadow: 0 8px 40px 0 rgba(139, 92, 246, 0.2) !important;
     }
     
     /* Expanders */
     .streamlit-expanderHeader {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-radius: 10px !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        transition: background 0.2s !important;
+    }
+    .streamlit-expanderHeader:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
     }
     
     /* Typography & Titles */
     h1, h2, h3 {
-        background: -webkit-linear-gradient(45deg, #60a5fa, #c084fc);
+        background: -webkit-linear-gradient(45deg, #93c5fd, #c4b5fd);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800 !important;
+        letter-spacing: -0.5px !important;
     }
     
     /* Buttons */
     .stButton > button {
-        background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%) !important;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
         border: none !important;
         color: white !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        padding: 0.5rem 1rem !important;
         box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
-        transition: transform 0.2s, box-shadow 0.2s !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     .stButton > button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5) !important;
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5) !important;
+    }
+    .stButton > button:active {
+        transform: translateY(0px) scale(0.98) !important;
     }
     
-    /* Info boxes */
+    /* Info/Alert boxes */
     .stAlert {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(10px) !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        backdrop-filter: blur(12px) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
+        border-radius: 16px !important;
         color: #e2e8f0 !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
     }
     </style>
     """, unsafe_allow_html=True)
