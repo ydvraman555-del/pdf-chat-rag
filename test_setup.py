@@ -1,37 +1,73 @@
 """
-test_setup.py — Verify environment setup and Gemini API key.
-SECURITY: This script NEVER prints the actual API key value.
+test_setup.py — Verify local Ollama setup and required models.
 """
 
 import sys
 import os
+import urllib.request
+import json
 from dotenv import load_dotenv
 
 
 def main():
-    # Step 1: Load .env
+    # Reconfigure stdout to support UTF-8 print (emojis on Windows)
+    if sys.platform.startswith('win'):
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
+
+    # Step 1: Load .env (if present, to check OLLAMA_HOST override)
     load_dotenv()
-    print("🔍 Checking environment setup...\n")
+    print("🔍 Checking environment setup for Local Ollama...\n")
 
-    # Step 2: Check GOOGLE_API_KEY exists
-    api_key = os.getenv("GOOGLE_API_KEY")
-
-    if not api_key:
-        print("❌ GOOGLE_API_KEY not found in .env file.")
-        print("   → Copy .env.example to .env and add your real key.")
+    # Step 2: Verify Ollama is running
+    ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+    print(f"📡 Connecting to Ollama server at: {ollama_host}...")
+    try:
+        # Simple HTTP request to see if Ollama responds and get list of tags
+        req = urllib.request.Request(f"{ollama_host}/api/tags")
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode())
+            installed_models = [m["name"] for m in data.get("models", [])]
+    except Exception as e:
+        print(f"❌ Could not connect to Ollama server.")
+        print(f"   → Make sure Ollama is installed and running on your system.")
+        print(f"   → Download link: https://ollama.com")
+        print(f"   → Error: {e}")
         sys.exit(1)
 
-    # Step 3: Check it's not the placeholder
-    if api_key == "your_gemini_api_key_here":
-        print("❌ GOOGLE_API_KEY is still the placeholder value.")
-        print("   → Replace it with your real Gemini API key in .env")
-        sys.exit(1)
+    print("✅ Successfully connected to Ollama server.")
 
-    print(f"✅ GOOGLE_API_KEY loaded (length: {len(api_key)} chars)")
+    # Step 3: Check models
+    required_models = ["gemma2:2b", "nomic-embed-text"]
+    missing_models = []
+    
+    # Normailze names to check them robustly (remove :latest tag matching)
+    normalized_installed = []
+    for m in installed_models:
+        normalized_installed.append(m)
+        if ":" in m:
+            normalized_installed.append(m.split(":")[0])
+
+    for req_model in required_models:
+        # Check direct match or without tag if tag matches
+        if req_model not in normalized_installed:
+            missing_models.append(req_model)
+            
+    if missing_models:
+        print("\n❌ Missing required models in Ollama:")
+        for m in missing_models:
+            print(f"   → '{m}' is not pulled.")
+            print(f"     Run command: ollama pull {m}")
+        sys.exit(1)
+        
+    print("✅ All required models (gemma2:2b, nomic-embed-text) are available.")
 
     # Step 4: Test imports
     try:
         import langchain
+        import langchain_ollama
         import faiss
         import pypdf
         import streamlit
@@ -41,54 +77,37 @@ def main():
         print("   → Run: pip install -r requirements.txt")
         sys.exit(1)
 
-    # Step 5: Test Gemini API call
-    print("\n🔗 Testing Gemini API connection...")
+    # Step 5: Test Ollama chat generation
+    print("\n🔗 Testing local model generation (gemma2:2b)...")
+    try:
+        from langchain_ollama import ChatOllama
+        llm = ChatOllama(model="gemma2:2b", temperature=0)
+        response = llm.invoke("Say 'hello' in one word.")
+        print(f"✅ Local Gemma responded: '{response.content.strip()}'")
+    except Exception as e:
+        print(f"❌ Generation test failed: {e}")
+        sys.exit(1)
 
-    models_to_try = ["gemini-2.0-flash-lite", "gemini-2.0-flash"]
-
-    for model_name in models_to_try:
-        try:
-            from langchain_google_genai import ChatGoogleGenerativeAI
-
-            llm = ChatGoogleGenerativeAI(
-                model=model_name,
-                google_api_key=api_key,
-            )
-            response = llm.invoke("Say 'hello' in one word.")
-            print(f"✅ Gemini responded ({model_name}): {response.content}")
-            break  # Success — no need to try other models
-        except Exception as e:
-            error_msg = str(e)
-            # Scrub any accidental key leakage from error messages
-            if api_key in error_msg:
-                error_msg = error_msg.replace(api_key, "***REDACTED***")
-
-            if "429" in error_msg or "quota" in error_msg.lower():
-                print(f"⚠️  Rate limited on {model_name}, ", end="")
-                if model_name != models_to_try[-1]:
-                    print("trying next model...")
-                    continue
-                print("all models rate-limited.")
-                print("\n⏳ This is a QUOTA issue, not a code issue.")
-                print("   Your setup is correct! To fix:")
-                print("   1. Wait a few minutes and try again")
-                print("   2. Check quota: https://ai.google.dev/gemini-api/docs/rate-limits")
-                print("   3. Free tier resets daily")
-                print("\n✅ Key + imports verified. You can proceed to build the app!")
-                return  # Don't sys.exit(1) — setup IS valid
-            else:
-                print(f"❌ Gemini API error: {error_msg}")
-                print("   → Verify your API key at: https://aistudio.google.com/app/apikey")
-                sys.exit(1)
+    # Step 6: Test Ollama embeddings
+    print("📐 Testing local embeddings (nomic-embed-text)...")
+    try:
+        from langchain_ollama import OllamaEmbeddings
+        embeddings = OllamaEmbeddings(model="nomic-embed-text")
+        vector = embeddings.embed_query("test")
+        print(f"✅ Embedding test succeeded (vector size: {len(vector)} dimensions)")
+    except Exception as e:
+        print(f"❌ Embedding test failed: {e}")
+        sys.exit(1)
 
     # Final summary
     print("\n" + "=" * 50)
-    print("🎉 Setup complete! All checks passed.")
+    print("🎉 Local Setup complete! All checks passed.")
     print("=" * 50)
     print("\nNext steps:")
     print("  1. Place your PDF as sample.pdf in the project folder")
-    print("  2. Run: streamlit run app.py  (once you build the app)")
+    print("  2. Run: streamlit run app.py")
 
 
 if __name__ == "__main__":
     main()
+

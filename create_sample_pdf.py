@@ -8,10 +8,18 @@ Run once: python create_sample_pdf.py
 Then run: python step2_chunking.py
 """
 
+import sys
 from fpdf import FPDF
 
 
 def create_sample_pdf():
+    # Reconfigure stdout to support UTF-8 print (emojis on Windows)
+    if sys.platform.startswith('win'):
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
+
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
 

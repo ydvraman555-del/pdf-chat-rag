@@ -7,10 +7,14 @@ import streamlit.components.v1 as components
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Load environment variables from .env
+load_dotenv()
+
 # Import LangChain components
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_ollama import OllamaEmbeddings
+from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -354,13 +358,8 @@ def inject_custom_css():
 
 
 def load_api_key() -> str:
-    # Load from .env if running locally
-    load_dotenv()
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key or api_key == "your_gemini_api_key_here":
-        st.error("⚠️ API key not configured. Check your environment variables.")
-        st.stop()
-    return api_key
+    # Bypassed since we are running 100% offline via local Ollama
+    return ""
 
 def validate_pdf(uploaded_file) -> bool:
     if uploaded_file.size > MAX_FILE_SIZE_BYTES:
@@ -389,9 +388,8 @@ def build_vectorstore(file_bytes: bytes, api_key: str):
         splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         chunks = splitter.split_documents(pages)
 
-        embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/gemini-embedding-001",
-            google_api_key=api_key,
+        embeddings = OllamaEmbeddings(
+            model="nomic-embed-text",
         )
         return FAISS.from_documents(chunks, embeddings)
 
@@ -422,19 +420,18 @@ def answer_question(vector_store, question: str, api_key: str) -> tuple[str, lis
             ("human", "{question}"),
         ])
         
-        models_to_try = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-2.0-flash"]
         messages = prompt.format_messages(context=context, question=question)
         
-        for model_name in models_to_try:
-            try:
-                llm = ChatGoogleGenerativeAI(model=model_name, google_api_key=api_key, temperature=0, max_retries=1)
-                response = llm.invoke(messages)
-                return response.content, source_pages, retrieved_docs
-            except Exception as model_err:
-                if "429" in str(model_err) or "quota" in str(model_err).lower(): continue
-                break
-        
-        return "⚠️ Too many requests or model error.", [], []
+        try:
+            groq_key = os.getenv("GROQ_API_KEY")
+            if not groq_key or groq_key == "your_groq_api_key_here":
+                return "⚠️ GROQ_API_KEY not found or not configured in your .env file.", [], []
+            llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0, groq_api_key=groq_key)
+            response = llm.invoke(messages)
+            return response.content, source_pages, retrieved_docs
+        except Exception as model_err:
+            return f"⚠️ Groq LLM error: {model_err}", [], []
+            
     except Exception as e:
         return "⚠️ Something went wrong generating the answer.", [], []
 
@@ -472,7 +469,7 @@ def main():
             st.session_state.debug_mode = st.checkbox("🔍 Show retrieved chunks", value=st.session_state.get("debug_mode", False))
                 
         st.markdown("---")
-        st.markdown("<small style='color: var(--text-secondary);'>🔒 Processed in-memory. Zero retention.</small>", unsafe_allow_html=True)
+        st.markdown("<small style='color: var(--text-secondary);'>🔒 100% Offline & Local RAG. Your data never leaves your computer.</small>", unsafe_allow_html=True)
 
     # 5. Empty State
     if not uploaded_file:

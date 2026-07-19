@@ -183,6 +183,12 @@ def display_results(pages: list, chunks: list, pdf_path: Path) -> None:
 
 def main():
     """Main entry point — load PDF, chunk it, display results."""
+    # Reconfigure stdout to support UTF-8 print (emojis on Windows)
+    if sys.platform.startswith('win'):
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
 
     # Resolve PDF path relative to this script's directory (project root)
     # Using pathlib ensures this works on Windows, Mac, and Linux
