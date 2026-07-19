@@ -562,68 +562,72 @@ def render_landing_page():
 
     # Interactive Simulator
     st.markdown("### 🎮 Interactive RAG Simulator")
-    st.markdown("Select a sample question below and simulate how the 6-step RAG pipeline processes documents and prevents hallucinations:")
+    st.markdown("Select a sample question below to simulate how the 6-step RAG pipeline retrieves facts and generates grounded answers:")
     
-    sim_col1, sim_col2 = st.columns([1, 2])
-    with sim_col1:
-        sim_query = st.selectbox(
-            "Choose a simulation query:",
-            [
-                "What is Retrieval-Augmented Generation?",
-                "What are neural networks?",
-                "What is the meaning of life?"
-            ],
-            key="sim_query_select",
-            label_visibility="collapsed"
-        )
-        run_sim = st.button("🚀 Run Simulator", use_container_width=True)
+    sim_query = st.selectbox(
+        "Choose a simulation query:",
+        [
+            "What is Retrieval-Augmented Generation?",
+            "What are neural networks?",
+            "What is the meaning of life?"
+        ],
+        key="sim_query_select",
+        label_visibility="collapsed"
+    )
+    run_sim = st.button("🚀 Run Simulator", use_container_width=True)
     
-    with sim_col2:
-        sim_placeholder = st.empty()
-        if run_sim:
-            with sim_placeholder.container():
-                st.markdown("<div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; min-height: 250px;'>", unsafe_allow_html=True)
+    sim_placeholder = st.empty()
+    if run_sim:
+        with sim_placeholder.container():
+            st.markdown("<div style='background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;'>", unsafe_allow_html=True)
+            
+            # Progress bar simulation
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            steps = [
+                ("📥 Step 1 of 6: Loading PDF pages...", 0.15),
+                ("✂️ Step 2 of 6: Splitting text into chunks...", 0.33),
+                ("📐 Step 3 of 6: Generating nomic-embed-text vectors...", 0.50),
+                ("💾 Step 4 of 6: Indexing vectors in FAISS database...", 0.66),
+                ("🔍 Step 5 of 6: Performing semantic similarity search...", 0.83),
+                ("🤖 Step 6 of 6: Querying LLM with retrieved context...", 1.0)
+            ]
+            
+            for status, progress_val in steps:
+                status_text.markdown(f"<p style='color: var(--accent-1); font-weight: 500; font-size: 0.95rem; margin: 0;'>{status}</p>", unsafe_allow_html=True)
+                progress_bar.progress(progress_val)
+                time.sleep(0.4)
+            
+            # Clear status and progress bar
+            status_text.empty()
+            progress_bar.empty()
+            
+            # Display simulated chat dialog
+            st.markdown("<p style='color: #a1a1aa; font-size: 0.85rem; margin-bottom: 0.5rem;'><b>Simulated Chat Output:</b></p>", unsafe_allow_html=True)
+            
+            with st.chat_message("user"):
+                st.markdown(sim_query)
                 
-                with st.spinner("📥 Step 1: Loading PDF pages..."):
-                    time.sleep(0.4)
-                st.success("📥 Step 1: PDF loaded successfully (5 pages parsed)")
-                
-                with st.spinner("✂️ Step 2: Chunking text..."):
-                    time.sleep(0.4)
-                st.success("✂️ Step 2: Created 11 overlapping chunks (size=1000, overlap=200)")
-                
-                with st.spinner("📐 Step 3: Generating embeddings..."):
-                    time.sleep(0.4)
-                st.success("📐 Step 3: Dense 768-D vectors calculated via nomic-embed-text")
-                
-                with st.spinner("💾 Step 4: Building FAISS index..."):
-                    time.sleep(0.4)
-                st.success("💾 Step 4: Index created in-memory and persisted to disk")
-                
-                with st.spinner("🔍 Step 5: Performing semantic search..."):
-                    time.sleep(0.4)
-                st.success("🔍 Step 5: Retrieved top 3 matching chunks (highest similarity score)")
-                
-                with st.spinner("🤖 Step 6: Querying LLM..."):
-                    time.sleep(0.5)
-                
-                st.markdown("💬 **Response from RAG Assistant:**")
+            with st.chat_message("assistant"):
                 if sim_query == "What is Retrieval-Augmented Generation?":
-                    st.info("Retrieval-Augmented Generation (RAG) is a technique that enhances an LLM by fetching relevant facts from an external document store before writing the answer. This ensures the output is grounded and does not rely on outdated memory. (Page 3)")
+                    st.markdown("Retrieval-Augmented Generation (RAG) is a technique that enhances an LLM by fetching relevant facts from an external document store before writing the answer. This ensures the output is grounded and does not rely on outdated memory.")
+                    st.markdown('<div class="source-pill">📑 Sources: Page(s) 3</div>', unsafe_allow_html=True)
                 elif sim_query == "What are neural networks?":
-                    st.info("Neural networks are models composed of layers of nodes (neurons) mimicking human brain structures. They map input features to output values through weights adjusted during backpropagation. (Page 2)")
+                    st.markdown("Neural networks are models composed of layers of nodes (neurons) mimicking human brain structures. They map input features to output values through weights adjusted during backpropagation.")
+                    st.markdown('<div class="source-pill">📑 Sources: Page(s) 2</div>', unsafe_allow_html=True)
                 else:
-                    st.warning("⚠️ **Hallucination Prevention Triggered:** I couldn't find information about the meaning of life in the provided document context.")
-                
-                st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            sim_placeholder.markdown("""
-                <div style="background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.1); padding: 2rem; border-radius: 12px; height: 100%; min-height: 250px; display: flex; align-items: center; justify-content: center; text-align: center;">
-                    <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
-                        👈 Select a query and click "Run Simulator" to watch the RAG pipeline run in real-time step-by-step!
-                    </p>
-                </div>
-            """, unsafe_allow_html=True)
+                    st.markdown("I couldn't find that in the document.")
+            
+            st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        sim_placeholder.markdown("""
+            <div style="background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.1); padding: 2rem; border-radius: 12px; text-align: center; margin-bottom: 1rem;">
+                <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
+                    Select a query above and click <b>\"Run Simulator\"</b> to watch the RAG pipeline run in real-time!
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
