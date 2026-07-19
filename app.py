@@ -1,5 +1,6 @@
 import os
 import time
+import threading
 import base64
 import tempfile
 import streamlit as st
@@ -375,9 +376,8 @@ def load_api_key() -> str:
         return api_key
     return ""
 
-@st.cache_resource(show_spinner=False)
-def pre_warm_models():
-    """Pre-warms the embeddings and LLM models at startup to avoid cold-start lag on first run."""
+def pre_warm_worker():
+    """Background worker to pre-warm embedding and LLM models without blocking the UI thread."""
     if is_cloud:
         try:
             api_key = os.getenv("GOOGLE_API_KEY")
@@ -411,6 +411,12 @@ def pre_warm_models():
                 llm.invoke("Hi")
         except Exception:
             pass
+
+@st.cache_resource(show_spinner=False)
+def pre_warm_models():
+    """Starts a background thread to pre-warm the models without blocking page rendering."""
+    thread = threading.Thread(target=pre_warm_worker, daemon=True)
+    thread.start()
 
 def validate_pdf(uploaded_file) -> bool:
     if uploaded_file.size > MAX_FILE_SIZE_BYTES:
