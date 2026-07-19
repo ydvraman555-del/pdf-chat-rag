@@ -2,6 +2,7 @@
 
 > A secure, high-performance RAG chatbot that lets you query any text-based PDF using local Ollama embeddings and cloud-based Groq LLM API. 
 
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Visit_App-blue?style=for-the-badge)](https://pdf-chat-rag-w342.onrender.com)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.45-FF4B4B?style=flat&logo=streamlit&logoColor=white)](https://streamlit.io)
 [![LangChain](https://img.shields.io/badge/LangChain-0.3-1C3C3C?style=flat&logo=langchain&logoColor=white)](https://langchain.com)
@@ -12,8 +13,10 @@
 
 ## 🎬 Demo
 
-> **Upload any PDF and start chatting!**  
-> *(No data leaves your computer for embeddings. The LLM runs via Groq API for lightning-fast inference.)*
+> **[▶️ Try the live cloud demo on Render](https://pdf-chat-rag-w342.onrender.com)** — Upload any PDF and start chatting!  
+> *(Runs in **Cloud Mode** using Google Gemini. Free tier — first load may take ~30s if the server is cold.)*
+
+To run the application locally in **Local Mode** (100% private local embeddings via Ollama + lightning-fast Groq LLM API), follow the setup instructions below.
 
 <!-- Add a screenshot or GIF here -->
 <!-- ![Demo](assets/demo.gif) -->
