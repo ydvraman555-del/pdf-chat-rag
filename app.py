@@ -377,11 +377,38 @@ def load_api_key() -> str:
 
 @st.cache_resource(show_spinner=False)
 def pre_warm_models():
-    """Pre-warms the local Ollama embedding model at startup to avoid cold-start lag on upload."""
-    if not is_cloud:
+    """Pre-warms the embeddings and LLM models at startup to avoid cold-start lag on first run."""
+    if is_cloud:
         try:
+            api_key = os.getenv("GOOGLE_API_KEY")
+            if api_key and api_key != "your_gemini_api_key_here":
+                # Warm up Google Gemini Embeddings
+                embeddings = GoogleGenerativeAIEmbeddings(
+                    model="models/gemini-embedding-001",
+                    google_api_key=api_key,
+                )
+                embeddings.embed_query("warmup")
+                
+                # Warm up Google Gemini LLM
+                llm = ChatGoogleGenerativeAI(
+                    model="gemini-2.5-flash",
+                    google_api_key=api_key,
+                    temperature=0.0,
+                )
+                llm.invoke("Hi")
+        except Exception:
+            pass
+    else:
+        try:
+            # Warm up Ollama nomic-embed-text
             embeddings = OllamaEmbeddings(model="nomic-embed-text")
             embeddings.embed_query("warmup")
+            
+            # Warm up Groq LLM connection
+            groq_key = os.getenv("GROQ_API_KEY")
+            if groq_key and groq_key != "your_groq_api_key_here":
+                llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.0, groq_api_key=groq_key)
+                llm.invoke("Hi")
         except Exception:
             pass
 
