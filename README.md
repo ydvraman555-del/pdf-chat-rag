@@ -29,7 +29,9 @@ To run the application locally in **Local Mode** (100% private local embeddings 
 
 | | Feature | Description |
 |---|---------|-------------|
+| 🏠 | **Multi-Page Layout** | Features an informative landing/info page explaining the app and an interactive chat assistant page |
 | 📄 | **PDF Upload + Chat** | Drag-and-drop any text-based PDF, then ask questions in a ChatGPT-style interface |
+| ⚙️ | **RAG Hyperparameters** | Tune LLM Temperature (creativity) and Retrieval Top K (context size) dynamically via sidebar sliders |
 | 📑 | **Page-Level Citations** | Every answer cites the exact page number(s) it came from — fully verifiable |
 | 🛡️ | **Hallucination Prevention** | Strict prompt engineering forces the LLM to answer ONLY from PDF content |
 | 🔒 | **Secure by Design** | Local embeddings with Ollama. API keys via env vars only, magic-byte PDF validation |

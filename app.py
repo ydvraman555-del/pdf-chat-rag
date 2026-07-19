@@ -434,9 +434,9 @@ def build_vectorstore(file_bytes: bytes, api_key: str):
                 pass
 
 
-def answer_question(vector_store, question: str, api_key: str) -> tuple[str, list[int], list]:
+def answer_question(vector_store, question: str, api_key: str, k: int = 4, temperature: float = 0.0) -> tuple[str, list[int], list]:
     try:
-        retrieved_docs = vector_store.similarity_search(question, k=4)
+        retrieved_docs = vector_store.similarity_search(question, k=k)
         context_parts = []
         for doc in retrieved_docs:
             page_num = doc.metadata.get("page", 0) + 1
@@ -456,7 +456,7 @@ def answer_question(vector_store, question: str, api_key: str) -> tuple[str, lis
             models_to_try = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-2.0-flash"]
             for model_name in models_to_try:
                 try:
-                    llm = ChatGoogleGenerativeAI(model=model_name, google_api_key=api_key, temperature=0, max_retries=1)
+                    llm = ChatGoogleGenerativeAI(model=model_name, google_api_key=api_key, temperature=temperature, max_retries=1)
                     response = llm.invoke(messages)
                     return response.content, source_pages, retrieved_docs
                 except Exception as model_err:
@@ -469,7 +469,7 @@ def answer_question(vector_store, question: str, api_key: str) -> tuple[str, lis
                 groq_key = os.getenv("GROQ_API_KEY")
                 if not groq_key or groq_key == "your_groq_api_key_here":
                     return "⚠️ GROQ_API_KEY not found or not configured in your .env file.", [], []
-                llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0, groq_api_key=groq_key)
+                llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=temperature, groq_api_key=groq_key)
                 response = llm.invoke(messages)
                 return response.content, source_pages, retrieved_docs
             except Exception as model_err:
@@ -481,12 +481,84 @@ def answer_question(vector_store, question: str, api_key: str) -> tuple[str, lis
         return "⚠️ Something went wrong generating the answer.", [], []
 
 
+def render_landing_page():
+    # Hero Section
+    st.markdown("""
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 2rem; border-radius: 16px; margin-bottom: 2rem; text-align: center; backdrop-filter: blur(10px);">
+            <h2 style="color: #ffffff; margin-bottom: 0.5rem; font-size: 2rem;">⚡ Grounded Document Q&A</h2>
+            <p style="color: #a1a1aa; font-size: 1.1rem; line-height: 1.6; margin: 0;">
+                PDF Chat RAG is a state-of-the-art document assistant that uses <b>Retrieval-Augmented Generation</b> to let you chat with any text-based PDF. Upload your file, ask questions, and get accurate answers with page-level citations.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Features Grid
+    st.markdown("### ✨ Key Features")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("""
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; min-height: 150px; margin-bottom: 1rem;">
+                <h4 style="color: #8b5cf6; margin-top: 0; margin-bottom: 0.5rem;">🔒 Privacy-First</h4>
+                <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
+                    Your data stays private. In Local Mode, embeddings are calculated 100% locally on your computer using Ollama.
+                </p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; min-height: 150px; margin-bottom: 1rem;">
+                <h4 style="color: #ec4899; margin-top: 0; margin-bottom: 0.5rem;">⚡ Zero-Lag Chat</h4>
+                <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
+                    With conditional import loading and Ollama model pre-warming, processing your PDF and chatting is incredibly fast.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; min-height: 150px; margin-bottom: 1rem;">
+                <h4 style="color: #3b82f6; margin-top: 0; margin-bottom: 0.5rem;">📑 Page Citations</h4>
+                <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
+                    No hallucinations. The AI is strictly constrained to the uploaded PDF context and cites the exact page numbers used.
+                </p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; min-height: 150px; margin-bottom: 1rem;">
+                <h4 style="color: #10b981; margin-top: 0; margin-bottom: 0.5rem;">🌐 Dual Cloud Mode</h4>
+                <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
+                    Runs locally on Ollama/Groq, but automatically detects Render and switches to Google Gemini for seamless online use.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    # Stepper / How it works Accordion
+    st.markdown("### ⚙️ How the RAG Pipeline Works")
+    with st.expander("🔍 Step-by-Step Architecture (The 6-Step Pipeline)"):
+        st.markdown("""
+            <div style="color: #a1a1aa; line-height: 1.8; font-size: 0.95rem; padding: 0.5rem;">
+                <ul style="list-style-type: none; padding-left: 0; margin: 0;">
+                    <li style="margin-bottom: 0.8rem;"><b style="color: #ffffff;">1. Document Loading:</b> Parses your PDF page-by-page using PyPDFLoader.</li>
+                    <li style="margin-bottom: 0.8rem;"><b style="color: #ffffff;">2. Text Chunking:</b> Splits pages into smaller, overlapping 1000-character segments (RecursiveCharacterTextSplitter).</li>
+                    <li style="margin-bottom: 0.8rem;"><b style="color: #ffffff;">3. Vector Embeddings:</b> Converts chunks into dense coordinates (768-D vectors locally via Ollama nomic-embed-text).</li>
+                    <li style="margin-bottom: 0.8rem;"><b style="color: #ffffff;">4. Vector Database:</b> Stores and indexes the coordinates in-memory using a FAISS database.</li>
+                    <li style="margin-bottom: 0.8rem;"><b style="color: #ffffff;">5. Semantic Retrieval:</b> Searches the database to find the top matching chunks related to your question.</li>
+                    <li style="margin-bottom: 0.8rem;"><b style="color: #ffffff;">6. Answer Generation:</b> Merges matching chunks with strict rules into a prompt, querying Groq/Gemini to write the answer.</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Launch Button
+    if st.button("💬 Launch Chat Assistant", use_container_width=True):
+        st.session_state.current_page = "Chat"
+        st.rerun()
+
+
 def main():
     # 1. Initialize State
     if "messages" not in st.session_state:
         st.session_state.messages = []
     if "pdf_processed" not in st.session_state:
         st.session_state.pdf_processed = False
+    if "current_page" not in st.session_state:
+        st.session_state.current_page = "Home"
 
     # 2. Inject CSS
     inject_custom_css()
@@ -495,26 +567,42 @@ def main():
     # Pre-warm local models at startup to prevent lag
     pre_warm_models()
     
-    # 3. Header
-    st.markdown("""
-        <h1 class="premium-title"><span class="animated-icon">📄</span> Chat with Your PDF</h1>
-        <p class="premium-subtitle">Ask anything. Get answers with verified sources.</p>
-    """, unsafe_allow_html=True)
-    
-    # 4. Sidebar UI
+    # Define variables to prevent scope/unbound errors
+    uploaded_file = None
+    retrieval_k = 4
+    temperature = 0.0
+
+    # 3. Sidebar UI (Navigation and Document Settings)
     with st.sidebar:
-        st.header("📄 Document Setup")
-        uploaded_file = st.file_uploader("Upload a PDF document", type=["pdf"], label_visibility="collapsed")
+        st.markdown("### 🗺️ Navigation")
+        current_idx = 0 if st.session_state.current_page == "Home" else 1
+        page = st.selectbox("Go to", ["🏠 Home", "💬 Chat Assistant"], index=current_idx, key="nav_select")
         
-        if uploaded_file:
-            file_size_mb = uploaded_file.size / (1024 * 1024)
-            st.info(f"**{uploaded_file.name}**\n\nSize: {file_size_mb:.1f} MB")
+        # Sync navigation selectbox to session state
+        if page == "🏠 Home":
+            st.session_state.current_page = "Home"
+        else:
+            st.session_state.current_page = "Chat"
             
-            if st.button("🗑️ Clear chat", use_container_width=True):
-                st.session_state.messages = []
-                st.rerun()
+        if st.session_state.current_page == "Chat":
+            st.markdown("---")
+            st.header("📄 Document Setup")
+            uploaded_file = st.file_uploader("Upload a PDF document", type=["pdf"], label_visibility="collapsed")
             
-            st.session_state.debug_mode = st.checkbox("🔍 Show retrieved chunks", value=st.session_state.get("debug_mode", False))
+            if uploaded_file:
+                file_size_mb = uploaded_file.size / (1024 * 1024)
+                st.info(f"**{uploaded_file.name}**\n\nSize: {file_size_mb:.1f} MB")
+                
+                if st.button("🗑️ Clear chat", use_container_width=True):
+                    st.session_state.messages = []
+                    st.rerun()
+                
+                st.session_state.debug_mode = st.checkbox("🔍 Show retrieved chunks", value=st.session_state.get("debug_mode", False))
+            
+            st.markdown("---")
+            st.markdown("### ⚙️ RAG Hyperparameters")
+            retrieval_k = st.slider("Top K Chunks (Retrieval)", min_value=1, max_value=10, value=4, help="Number of document chunks retrieved for context.")
+            temperature = st.slider("LLM Temperature (Creativity)", min_value=0.0, max_value=1.0, value=0.0, step=0.1, help="0.0 is deterministic and factual; 1.0 is creative.")
                 
         st.markdown("---")
         if is_cloud:
@@ -522,7 +610,18 @@ def main():
         else:
             st.markdown("<small style='color: var(--text-secondary);'>🔒 Local Mode: Local Ollama & Groq. 100% private & secure.</small>", unsafe_allow_html=True)
 
-    # 5. Empty State
+    # 4. Header (runs on both pages)
+    st.markdown("""
+        <h1 class="premium-title"><span class="animated-icon">📄</span> Chat with Your PDF</h1>
+        <p class="premium-subtitle">Ask anything. Get answers with verified sources.</p>
+    """, unsafe_allow_html=True)
+
+    # 5. Routing
+    if st.session_state.current_page == "Home":
+        render_landing_page()
+        return
+
+    # 6. Chat Page Empty State
     if not uploaded_file:
         st.session_state.pdf_processed = False # Reset
         st.markdown("""
@@ -575,7 +674,7 @@ def main():
             placeholder = st.empty()
             placeholder.markdown(loading_html, unsafe_allow_html=True)
             
-            answer, sources, retrieved_docs = answer_question(vector_store, prompt, api_key)
+            answer, sources, retrieved_docs = answer_question(vector_store, prompt, api_key, k=retrieval_k, temperature=temperature)
             
             placeholder.empty()
             

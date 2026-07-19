@@ -141,7 +141,7 @@ Answer + Source Page Numbers displayed in Streamlit UI
 |---|---|
 | **Provider** | Groq (cloud) |
 | **Model** | `llama-3.3-70b-versatile` |
-| **Temperature** | `0` (deterministic) |
+| **Temperature** | Dynamic (0.0 to 1.0, user-adjustable; defaults to `0.0`) |
 
 ---
 
@@ -152,7 +152,9 @@ Answer + Source Page Numbers displayed in Streamlit UI
 - **Accent colors:** Purple `#8b5cf6`, Blue `#3b82f6`, Pink `#ec4899`
 - **Font:** Inter (Google Fonts)
 - **Effects:** CSS particle system, floating animation, fade-in chat messages, typewriter response, confetti on PDF upload
-- **Layout:** Centered, sidebar for file upload + settings
+- **Layout Pages**:
+  - **🏠 Home Page**: Premium introduction card, Features Grid, interactive 6-step RAG Pipeline accordion, and a CTA "Launch Chat Assistant" button.
+  - **💬 Chat Page**: Centered ChatGPT-style chat layout, sidebar with PDF uploader, debug mode toggles, and RAG Hyperparameters settings sliders (Top K and LLM Temperature).
 
 ---
 
