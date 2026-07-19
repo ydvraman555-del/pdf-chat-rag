@@ -124,7 +124,10 @@ This document explains the step-by-step architecture of the Retrieval-Augmented 
 
 ## 🛠️ File References in the Project
 
-* **Text Chunking Demo:** See [step2_chunking.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/step2_chunking.py)
-* **Vector Creation Demo:** See [step3_embeddings.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/step3_embeddings.py)
-* **Terminal RAG Workflow:** See [step4_qa.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/step4_qa.py)
-* **Production UI App:** See [app.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/app.py)
+* **Step 1: Document Loading:** See [step1_loading.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/step1_loading.py)
+* **Step 2: Document Chunking:** See [step2_chunking.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/step2_chunking.py)
+* **Step 3: Vector Embeddings:** See [step3_embeddings.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/step3_embeddings.py)
+* **Step 4: Vector Storage:** See [step4_vector_store.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/step4_vector_store.py)
+* **Step 5: Context Retrieval:** See [step5_retrieval.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/step5_retrieval.py)
+* **Step 6: Answer Generation:** See [step6_generation.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/step6_generation.py)
+* **Production UI Web App:** See [app.py](file:///c:/Users/HP/Downloads/RAG Project/pdf-chat-rag/app.py)

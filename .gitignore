@@ -14,6 +14,7 @@ __pycache__/
 
 # Sample data
 sample.pdf
+faiss_index/
 
 # IDE
 .vscode/

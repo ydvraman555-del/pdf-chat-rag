@@ -37,58 +37,33 @@
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture & Pipeline Steps
+
+The RAG pipeline is broken down into **6 granular steps**, each represented by a dedicated learning script:
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         USER (Browser)                          │
-│                     Streamlit Chat Interface                    │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │ Upload PDF / Ask Question
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      STREAMLIT SERVER                           │
-│                                                                 │
-│  ┌─────────────┐    ┌──────────────┐    ┌───────────────────┐   │
-│  │  PDF Upload  │───▶│   PyPDFLoader │───▶│ Text Splitter     │   │
-│  │  Validation  │    │   (Extract)   │    │ (1000 char chunks)│   │
-│  │ (Magic bytes)│    └──────────────┘    └────────┬──────────┘   │
-│  └─────────────┘                                  │              │
-│                                                   ▼              │
-│                              ┌─────────────────────────────┐    │
-│                              │   Ollama Local Embedding     │    │
-│                              │   (nomic-embed-text)         │    │
-│                              │   Text → 768-D vectors       │    │
-│                              └──────────────┬──────────────┘    │
-│                                             │                    │
-│                                             ▼                    │
-│  ┌──────────────┐           ┌──────────────────────────┐        │
-│  │  User Query   │──embed──▶│    FAISS Vector Store     │        │
-│  └──────┬───────┘           │    (In-Memory Index)      │        │
-│         │                   │    Similarity Search (k=4) │        │
-│         │                   └──────────────┬───────────┘        │
-│         │                                  │ Top 4 chunks       │
-│         ▼                                  ▼                    │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │              PROMPT TEMPLATE (Strict RAG)                │    │
-│  │  System: "Answer ONLY from context. Cite pages.          │    │
-│  │           Say 'I couldn't find that' if not present."    │    │
-│  │  Context: [Page 2]: chunk... [Page 5]: chunk...          │    │
-│  │  Human: {user_question}                                  │    │
-│  └──────────────────────────┬──────────────────────────────┘    │
-│                             │                                    │
-│                             ▼                                    │
-│               ┌──────────────────────────┐                      │
-│               │   Groq API Cloud LLM     │                      │
-│               │   (llama-3.3-70b)        │                      │
-│               │   temperature=0          │                      │
-│               └──────────────┬───────────┘                      │
-│                              │                                   │
-│                              ▼                                   │
-│                 ┌────────────────────────┐                       │
-│                 │  Answer + Page Sources  │                       │
-│                 └────────────────────────┘                       │
-└─────────────────────────────────────────────────────────────────┘
+    [PDF File]
+        │
+        ▼ (Step 1: step1_loading.py)
+ 1. Document Loading (Extract raw text page-by-page)
+        │
+        ▼ (Step 2: step2_chunking.py)
+ 2. Document Chunking (Split pages into overlapping 1000-char chunks)
+        │
+        ▼ (Step 3: step3_embeddings.py)
+ 3. Vector Embeddings (Convert text to 768-D dense vectors locally)
+        │
+        ▼ (Step 4: step4_vector_store.py)
+ 4. Vector Storage (Index vectors in FAISS & persist to disk)
+        │
+        ▼ (Step 5: step5_retrieval.py)
+ 5. Context Retrieval (Query local FAISS via similarity search)
+        │
+        ▼ (Step 6: step6_generation.py)
+ 6. Answer Generation (Construct prompt & invoke ChatGroq LLM)
+        │
+        ▼
+ [Grounded Answer + Citations]
 ```
 
 ---
@@ -159,12 +134,55 @@
    ```bash
    python test_setup.py
    ```
-7. Start the application:
+
+---
+
+## 📖 Walkthrough: Run the RAG Pipeline Step-by-Step
+
+Anyone can understand the full pipeline by running these scripts in sequence:
+
+1. **Generate the sample PDF**:
    ```bash
-   streamlit run app.py
+   python create_sample_pdf.py
+   ```
+2. **Step 1 - PDF Text Loading**:
+   Extract and inspect raw text from page 1 and page 2.
+   ```bash
+   python step1_loading.py
+   ```
+3. **Step 2 - Document Chunking**:
+   Split the loaded pages into overlapping text segments.
+   ```bash
+   python step2_chunking.py
+   ```
+4. **Step 3 - Vector Embeddings**:
+   Convert a text string into a 768-D semantic vector locally.
+   ```bash
+   python step3_embeddings.py
+   ```
+5. **Step 4 - Vector Database persistence**:
+   Index the document chunks and save the FAISS database to the local `faiss_index/` folder.
+   ```bash
+   python step4_vector_store.py
+   ```
+6. **Step 5 - Semantic Retrieval**:
+   Load the saved index from disk and run similarity searches.
+   ```bash
+   python step5_retrieval.py
+   ```
+7. **Step 6 - LLM Generation**:
+   Retrieve matching chunks, build the prompt, and get grounded answers from Groq.
+   ```bash
+   python step6_generation.py
    ```
 
-The application will open in your browser at `http://localhost:8501`.
+### Run the Web Interface
+
+Start the Streamlit web application:
+```bash
+streamlit run app.py
+```
+The interface opens at `http://localhost:8501`.
 
 ---
 
@@ -192,12 +210,15 @@ pdf-chat-rag/
 ├── app.py                    # Main Streamlit application (production UI)
 ├── requirements.txt          # Python packages (langchain, streamlit, faiss, etc.)
 ├── .env.example              # Template for API keys
-├── .gitignore                # Security: excludes .env, venv, and generated PDFs
+├── .gitignore                # Security: excludes .env, venv, and generated database index files
 ├── .streamlit/
 │   └── config.toml           # Streamlit server and theme configurations
-├── step2_chunking.py         # Learning Script: PDF chunking demo
-├── step3_embeddings.py       # Learning Script: Local embedding + FAISS index demo
-├── step4_qa.py               # Learning Script: Full RAG pipeline CLI demo
+├── step1_loading.py          # Step 1: PDF loading and text extraction
+├── step2_chunking.py         # Step 2: Document text chunking
+├── step3_embeddings.py       # Step 3: Local vector embeddings generation
+├── step4_vector_store.py      # Step 4: Vector index creation and local persistence
+├── step5_retrieval.py         # Step 5: Similarity search retrieval
+├── step6_generation.py       # Step 6: Grounded LLM Q&A answer generation
 ├── create_sample_pdf.py      # Utility: generates sample.pdf for testing
 ├── test_setup.py             # Utility: verifies Ollama, models, and Groq API
 ├── brain.md                  # Reference: Quick summary of overall project details
