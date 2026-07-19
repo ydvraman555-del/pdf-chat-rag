@@ -19,6 +19,13 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 
+# Pre-load libraries at startup to prevent lag during the first PDF upload or first message
+if is_cloud:
+    from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+else:
+    from langchain_ollama import OllamaEmbeddings
+    from langchain_groq import ChatGroq
+
 # ─────────────────────────────────────────────
 # PAGE CONFIGURATION
 # ─────────────────────────────────────────────
@@ -368,6 +375,16 @@ def load_api_key() -> str:
         return api_key
     return ""
 
+@st.cache_resource(show_spinner=False)
+def pre_warm_models():
+    """Pre-warms the local Ollama embedding model at startup to avoid cold-start lag on upload."""
+    if not is_cloud:
+        try:
+            embeddings = OllamaEmbeddings(model="nomic-embed-text")
+            embeddings.embed_query("warmup")
+        except Exception:
+            pass
+
 def validate_pdf(uploaded_file) -> bool:
     if uploaded_file.size > MAX_FILE_SIZE_BYTES:
         st.error(f"⚠️ PDF too large. Please upload under {MAX_FILE_SIZE_MB} MB.")
@@ -396,13 +413,11 @@ def build_vectorstore(file_bytes: bytes, api_key: str):
         chunks = splitter.split_documents(pages)
 
         if is_cloud:
-            from langchain_google_genai import GoogleGenerativeAIEmbeddings
             embeddings = GoogleGenerativeAIEmbeddings(
                 model="models/gemini-embedding-001",
                 google_api_key=api_key,
             )
         else:
-            from langchain_ollama import OllamaEmbeddings
             embeddings = OllamaEmbeddings(
                 model="nomic-embed-text",
             )
@@ -438,7 +453,6 @@ def answer_question(vector_store, question: str, api_key: str) -> tuple[str, lis
         messages = prompt.format_messages(context=context, question=question)
         
         if is_cloud:
-            from langchain_google_genai import ChatGoogleGenerativeAI
             models_to_try = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-2.0-flash"]
             for model_name in models_to_try:
                 try:
@@ -451,7 +465,6 @@ def answer_question(vector_store, question: str, api_key: str) -> tuple[str, lis
                     return f"⚠️ Gemini LLM error: {model_err}", [], []
             return "⚠️ Too many requests or model error.", [], []
         else:
-            from langchain_groq import ChatGroq
             try:
                 groq_key = os.getenv("GROQ_API_KEY")
                 if not groq_key or groq_key == "your_groq_api_key_here":
@@ -478,6 +491,9 @@ def main():
     # 2. Inject CSS
     inject_custom_css()
     api_key = load_api_key()
+    
+    # Pre-warm local models at startup to prevent lag
+    pre_warm_models()
     
     # 3. Header
     st.markdown("""
