@@ -484,10 +484,10 @@ def answer_question(vector_store, question: str, api_key: str, k: int = 4, tempe
 def render_landing_page():
     # Hero Section
     st.markdown("""
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 2rem; border-radius: 16px; margin-bottom: 2rem; text-align: center; backdrop-filter: blur(10px);">
-            <h2 style="color: #ffffff; margin-bottom: 0.5rem; font-size: 2rem;">⚡ Grounded Document Q&A</h2>
-            <p style="color: #a1a1aa; font-size: 1.1rem; line-height: 1.6; margin: 0;">
-                PDF Chat RAG is a state-of-the-art document assistant that uses <b>Retrieval-Augmented Generation</b> to let you chat with any text-based PDF. Upload your file, ask questions, and get accurate answers with page-level citations.
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 2.2rem; border-radius: 16px; margin-bottom: 2rem; text-align: center; backdrop-filter: blur(10px); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);">
+            <h2 style="color: #ffffff; margin-bottom: 0.8rem; font-size: 2.2rem; font-weight: 700; background: linear-gradient(to right, #8b5cf6, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">⚡ Grounded Document Q&A Assistant</h2>
+            <p style="color: #a1a1aa; font-size: 1.15rem; line-height: 1.7; margin: 0; max-width: 800px; margin-left: auto; margin-right: auto;">
+                PDF Chat RAG is a premium, secure document intelligence platform. Chat naturally with your PDFs and get instant answers backed by verifiable page-level sources and strict anti-hallucination guardrails.
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -498,14 +498,14 @@ def render_landing_page():
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("""
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; min-height: 150px; margin-bottom: 1rem;">
-                <h4 style="color: #8b5cf6; margin-top: 0; margin-bottom: 0.5rem;">🔒 Privacy-First</h4>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; min-height: 140px; margin-bottom: 1.2rem; transition: transform 0.2s;">
+                <h4 style="color: #8b5cf6; margin-top: 0; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">🔒 Privacy-First</h4>
                 <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
                     Your data stays private. In Local Mode, embeddings are calculated 100% locally on your computer using Ollama.
                 </p>
             </div>
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; min-height: 150px; margin-bottom: 1rem;">
-                <h4 style="color: #ec4899; margin-top: 0; margin-bottom: 0.5rem;">⚡ Zero-Lag Chat</h4>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; min-height: 140px; margin-bottom: 1.2rem; transition: transform 0.2s;">
+                <h4 style="color: #ec4899; margin-top: 0; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">⚡ Zero-Lag Chat</h4>
                 <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
                     With conditional import loading and Ollama model pre-warming, processing your PDF and chatting is incredibly fast.
                 </p>
@@ -513,19 +513,86 @@ def render_landing_page():
         """, unsafe_allow_html=True)
     with col2:
         st.markdown("""
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; min-height: 150px; margin-bottom: 1rem;">
-                <h4 style="color: #3b82f6; margin-top: 0; margin-bottom: 0.5rem;">📑 Page Citations</h4>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; min-height: 140px; margin-bottom: 1.2rem; transition: transform 0.2s;">
+                <h4 style="color: #3b82f6; margin-top: 0; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">📑 Page Citations</h4>
                 <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
                     No hallucinations. The AI is strictly constrained to the uploaded PDF context and cites the exact page numbers used.
                 </p>
             </div>
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; min-height: 150px; margin-bottom: 1rem;">
-                <h4 style="color: #10b981; margin-top: 0; margin-bottom: 0.5rem;">🌐 Dual Cloud Mode</h4>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; min-height: 140px; margin-bottom: 1.2rem; transition: transform 0.2s;">
+                <h4 style="color: #10b981; margin-top: 0; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">🌐 Dual Cloud Mode</h4>
                 <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
                     Runs locally on Ollama/Groq, but automatically detects Render and switches to Google Gemini for seamless online use.
                 </p>
             </div>
         """, unsafe_allow_html=True)
+
+    # Interactive Simulator
+    st.markdown("### 🎮 Interactive RAG Simulator")
+    st.markdown("Select a sample question below and simulate how the 6-step RAG pipeline processes documents and prevents hallucinations:")
+    
+    sim_col1, sim_col2 = st.columns([1, 2])
+    with sim_col1:
+        sim_query = st.selectbox(
+            "Choose a simulation query:",
+            [
+                "What is Retrieval-Augmented Generation?",
+                "What are neural networks?",
+                "What is the meaning of life?"
+            ],
+            key="sim_query_select",
+            label_visibility="collapsed"
+        )
+        run_sim = st.button("🚀 Run Simulator", use_container_width=True)
+    
+    with sim_col2:
+        sim_placeholder = st.empty()
+        if run_sim:
+            with sim_placeholder.container():
+                st.markdown("<div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; min-height: 250px;'>", unsafe_allow_html=True)
+                
+                with st.spinner("📥 Step 1: Loading PDF pages..."):
+                    time.sleep(0.4)
+                st.success("📥 Step 1: PDF loaded successfully (5 pages parsed)")
+                
+                with st.spinner("✂️ Step 2: Chunking text..."):
+                    time.sleep(0.4)
+                st.success("✂️ Step 2: Created 11 overlapping chunks (size=1000, overlap=200)")
+                
+                with st.spinner("📐 Step 3: Generating embeddings..."):
+                    time.sleep(0.4)
+                st.success("📐 Step 3: Dense 768-D vectors calculated via nomic-embed-text")
+                
+                with st.spinner("💾 Step 4: Building FAISS index..."):
+                    time.sleep(0.4)
+                st.success("💾 Step 4: Index created in-memory and persisted to disk")
+                
+                with st.spinner("🔍 Step 5: Performing semantic search..."):
+                    time.sleep(0.4)
+                st.success("🔍 Step 5: Retrieved top 3 matching chunks (highest similarity score)")
+                
+                with st.spinner("🤖 Step 6: Querying LLM..."):
+                    time.sleep(0.5)
+                
+                st.markdown("💬 **Response from RAG Assistant:**")
+                if sim_query == "What is Retrieval-Augmented Generation?":
+                    st.info("Retrieval-Augmented Generation (RAG) is a technique that enhances an LLM by fetching relevant facts from an external document store before writing the answer. This ensures the output is grounded and does not rely on outdated memory. (Page 3)")
+                elif sim_query == "What are neural networks?":
+                    st.info("Neural networks are models composed of layers of nodes (neurons) mimicking human brain structures. They map input features to output values through weights adjusted during backpropagation. (Page 2)")
+                else:
+                    st.warning("⚠️ **Hallucination Prevention Triggered:** I couldn't find information about the meaning of life in the provided document context.")
+                
+                st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            sim_placeholder.markdown("""
+                <div style="background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.1); padding: 2rem; border-radius: 12px; height: 100%; min-height: 250px; display: flex; align-items: center; justify-content: center; text-align: center;">
+                    <p style="color: #a1a1aa; font-size: 0.95rem; margin: 0; line-height: 1.5;">
+                        👈 Select a query and click "Run Simulator" to watch the RAG pipeline run in real-time step-by-step!
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
 
     # Stepper / How it works Accordion
     st.markdown("### ⚙️ How the RAG Pipeline Works")
@@ -576,15 +643,47 @@ def main():
     with st.sidebar:
         st.markdown("### 🗺️ Navigation")
         current_idx = 0 if st.session_state.current_page == "Home" else 1
-        page = st.selectbox("Go to", ["🏠 Home", "💬 Chat Assistant"], index=current_idx, key="nav_select")
+        page = st.radio("Go to", ["🏠 Home", "💬 Chat Assistant"], index=current_idx, key="nav_radio", label_visibility="collapsed")
         
-        # Sync navigation selectbox to session state
+        # Sync navigation radio to session state
         if page == "🏠 Home":
             st.session_state.current_page = "Home"
         else:
             st.session_state.current_page = "Chat"
             
-        if st.session_state.current_page == "Chat":
+        if st.session_state.current_page == "Home":
+            st.markdown("---")
+            st.markdown("### 📡 System Status")
+            if is_cloud:
+                st.markdown("""
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <p style="color: #3b82f6; font-size: 0.9rem; margin-top: 0; margin-bottom: 0.3rem;"><b>Active Mode</b></p>
+                        <p style="color: #ffffff; font-size: 1rem; margin: 0; font-weight: 500;">🌐 Cloud Mode</p>
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 0.5rem 0;">
+                        <p style="color: #a1a1aa; font-size: 0.85rem; margin-bottom: 0.2rem;"><b>Embedding:</b> Gemini-001</p>
+                        <p style="color: #a1a1aa; font-size: 0.85rem; margin-bottom: 0;"><b>LLM:</b> Gemini-2.5-Flash</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown("""
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <p style="color: #8b5cf6; font-size: 0.9rem; margin-top: 0; margin-bottom: 0.3rem;"><b>Active Mode</b></p>
+                        <p style="color: #ffffff; font-size: 1rem; margin: 0; font-weight: 500;">🔒 Local Mode</p>
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 0.5rem 0;">
+                        <p style="color: #a1a1aa; font-size: 0.85rem; margin-bottom: 0.2rem;"><b>Embedding:</b> nomic-embed-text</p>
+                        <p style="color: #a1a1aa; font-size: 0.85rem; margin-bottom: 0;"><b>LLM:</b> llama-3.3-70b-versatile</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown("""
+                <div style="background: rgba(139, 92, 246, 0.05); border: 1px dashed rgba(139, 92, 246, 0.2); padding: 1rem; border-radius: 8px;">
+                    <p style="color: #a1a1aa; font-size: 0.85rem; margin: 0; line-height: 1.45;">
+                        💡 <b>Tip:</b> Click <b>💬 Chat Assistant</b> in the navigation menu above to upload a PDF document and start chatting!
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        elif st.session_state.current_page == "Chat":
             st.markdown("---")
             st.header("📄 Document Setup")
             uploaded_file = st.file_uploader("Upload a PDF document", type=["pdf"], label_visibility="collapsed")

@@ -153,8 +153,9 @@ Answer + Source Page Numbers displayed in Streamlit UI
 - **Font:** Inter (Google Fonts)
 - **Effects:** CSS particle system, floating animation, fade-in chat messages, typewriter response, confetti on PDF upload
 - **Layout Pages**:
-  - **🏠 Home Page**: Premium introduction card, Features Grid, interactive 6-step RAG Pipeline accordion, and a CTA "Launch Chat Assistant" button.
+  - **🏠 Home Page**: Premium introduction card, Features Grid, interactive RAG Pipeline Simulator (with mock progress timers and out-of-context warnings), 6-step RAG Pipeline accordion, and a CTA "Launch Chat Assistant" button.
   - **💬 Chat Page**: Centered ChatGPT-style chat layout, sidebar with PDF uploader, debug mode toggles, and RAG Hyperparameters settings sliders (Top K and LLM Temperature).
+  - **Sidebar Navigation**: Uses an interactive radio button list instead of a dropdown (to eliminate search-by-typing). Populated with a **📡 System Status** card (summarizing active models/embeddings) and quick navigation tips when on the Home page to fill vacant space.
 
 ---
 
